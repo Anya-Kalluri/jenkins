@@ -1,35 +1,25 @@
 pipeline {
-    agent { 
-        node {
-            label 'docker-agent-alpine'
-            }
-      }
-    triggers {
-        pollSCM '*/5 * * * *'
+    agent {
+        docker {
+            image 'python:3-slim'
+            args '--network=host -v /tmp:/tmp'
+        }
     }
     stages {
-        stage('Build') {
+        stage('Setup') {
             steps {
-                echo "Building.."
-                sh '''
-                echo "Building from Jenkins file"
-                '''
+                checkout scm
+                sh 'pip install -r requirements.txt'  // Install dependencies
             }
         }
         stage('Test') {
             steps {
-                echo "Testing.."
-                sh '''
-                echo "Testing the build triggered from Jenkins file."
-                '''
+                sh 'python3 -m pytest'  // Example if you have tests
             }
         }
-        stage('Deliver') {
+        stage('Run') {
             steps {
-                echo 'Deliver....'
-                sh '''
-                echo "doing delivery stuff.."
-                '''
+                sh 'python3 helloworld.py'
             }
         }
     }
